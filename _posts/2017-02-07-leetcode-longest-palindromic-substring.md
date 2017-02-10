@@ -97,9 +97,9 @@ This code is accepted, but there is actually an O(n) way.
 ## the Manacher's algorithm
 The Manacher algorithm is an O(n) algorithm for solving this
 particular problem.
-There are already some decent articles about the algorithm:
+There are already some decent articles about the algorithm:    
 1. [最好的解释是用中文写的](
-  https://www.felix021.com/blog/read.php?2040)
+  https://www.felix021.com/blog/read.php?2040)    
 2. [a good explanation](
   http://articles.leetcode.com/longest-palindromic-substring-part-ii/)
 
