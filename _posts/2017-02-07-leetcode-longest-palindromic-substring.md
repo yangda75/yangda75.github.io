@@ -6,7 +6,7 @@ tags: leetcode, Manacher's algorithm, string process
 
 ## the problem itself
 
-Input: string s;    
+Input: string s;
 Output: the longest *substring* in s which is panlindromic.
 
 This problem is tagged as `medium` on leetcode. It's no difficult
@@ -14,13 +14,13 @@ to solve but it's associated with an interesting algorithm.
 
 ## an intuitive solution
 After some thoughts, I came up with a solution finishes in
-O(n^2) time and no extra space, where n is the length of  
-given string:    
+O(n^2) time and no extra space, where n is the length of
+given string:
 
-**expand from the *core***    
+**expand from the *core***
 Each palindromic string has a *core* at the central position, it
 can be either one character or two. A palindrome is symmetric to
-its *core*.    
+its *core*.
 
 ```
 a 'dual core' palindrome:
@@ -37,7 +37,7 @@ Loop the given string s; expand from `s[i]` to find the longest
 panlindromic substring using `s[i]` as its single core; if
 `s[i]==s[i+1]`, expand from the dual core `s[i]+s[i+1]`.
 
-**time complexity**    
+**time complexity**
 Each expansion is O(n), because the worst case is expanding
 from the core of given string `s` when `s` as a whole is
 palindromic. And expansion happens inside a for loop, so the
@@ -96,10 +96,10 @@ This code is accepted, but there is actually an O(n) way.
 
 ## the Manacher algorithm
 The Manacher algorithm is an O(n) algorithm for solving this
-particular problem.   
-There are already some decent articles about the algorithm:    
+particular problem.
+There are already some decent articles about the algorithm:
 1. [最好的解释是用中文写的](
-  https://www.felix021.com/blog/read.php?2040)    
+  https://www.felix021.com/blog/read.php?2040)
 2. [a good explanation](
   http://articles.leetcode.com/longest-palindromic-substring-part-ii/)
 
@@ -142,10 +142,10 @@ string longestPalindrome(string s) {
 }
 {% endhighlight %}
 
-Line 11 and line 9 are crucial.    
+Line 11 and line 9 are crucial.
 Actually, the while loop in line 11 always spend O(1) time
 within `maxReach`, which means scanned part will not be
-scanned again. This is guranteed:   
+scanned again. This is guranteed:
 
 1. Since there is a preProcess procedure, there is only the
 single core case,
