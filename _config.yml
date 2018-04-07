@@ -25,6 +25,8 @@ github_username:  bill363yang
 
 # Build settings
 markdown: kramdown
+kramdown:
+        math_engine: mathjax
 theme: minima
 gems:
   - jekyll-feed
