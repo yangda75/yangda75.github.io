@@ -1,10 +1,10 @@
 ---
 layout: post
-title: "man bash INVOCATION to SHELL GRAMMAR"
+title: "man bash INVOCATION to RESERVED WORDS"
 tags: bash, mannual, translation, notes, shell grammar
 ---
 
-## man bash 的中文翻译：(INVOCATION - SHELL GRAMMAR之前)|阅读笔记
+## man bash 的中文翻译：(INVOCATION - RESERVED WORDS)|阅读笔记
 
 ```bash
 INVOCATION
