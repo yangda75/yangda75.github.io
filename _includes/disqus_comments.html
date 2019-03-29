@@ -1,10 +1,4 @@
 {% if page.comments != false and jekyll.environment == "production" %}
-  {% if site.url %}
-    {% assign disqus_url = page.url | prepend: site.url %}
-  {% elsif site.github.url %}
-    {% assign disqus_url = page.url | prepend: site.github.url %}
-  {% endif %}
-
   <div id="disqus_thread"></div>
   <script>
     var disqus_config = function () {
@@ -15,7 +9,7 @@
     (function() {
       var d = document, s = d.createElement('script');
 
-      s.src = 'https://{{ site.disqus.shortname }}.disqus.com/embed.js';
+      s.src = 'https://bill363yang-github-com.disqus.com/embed.js';
 
       s.setAttribute('data-timestamp', +new Date());
       (d.head || d.body).appendChild(s);
