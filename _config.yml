@@ -27,7 +27,7 @@ github_username:  bill363yang
 markdown: kramdown
 kramdown:
         math_engine: mathjax
-theme: minima
+theme: jekyll-theme-slate
 gems:
   - jekyll-feed
 exclude:
