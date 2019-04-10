@@ -154,5 +154,123 @@ SHELL GRAMMAR
 	`[[ expression ]]`expression是一个条件表达式，根据它的值来返回0或者1。其中的表达式根据下面的CONDITIONAL EXPRESSION部分的
 	描述来构建。word splitting, pathname expansion在`[[]]`中不进行。tilde expansion, parameter and variable expansion
 	,arithmetic expansion, command/process substitution, quote removal照常进行。条件操作符，如`-f`一定要被unquote才能被
-	识别为primary。
-	
+	识别为primary。  
+    `<`和`>`号在和`[[`一起使用的时候,会使用当前的locale，进行lexical排序。  
+    在`test`命令的描述中查看参数的处理。  
+    
+```
+       When  the  == and != operators are used, the string to the right of the operator is considered a pattern
+       and matched according to the rules described below under Pattern  Matching,  as  if  the  extglob  shell
+       option  were  enabled.  The = operator is equivalent to ==.  If the nocasematch shell option is enabled,
+       the match is performed without regard to the case of alphabetic characters.  The return value  is  0  if
+       the  string  matches  (==) or does not match (!=) the pattern, and 1 otherwise.  Any part of the pattern
+       may be quoted to force the quoted portion to be matched as a string.
+
+       An additional binary operator, =~, is available, with the same precedence as ==  and  !=.   When  it  is
+       used,  the  string to the right of the operator is considered an extended regular expression and matched
+       accordingly (as in regex(3)).  The return value is 0 if the string matches the pattern, and 1 otherwise.
+       If  the  regular  expression is syntactically incorrect, the conditional expression's return value is 2.
+       If the nocasematch shell option is enabled, the match is performed without regard to the case of  alpha‐
+       betic  characters.  Any part of the pattern may be quoted to force the quoted portion to be matched as a
+       string.  Bracket expressions in regular expressions must be  treated  carefully,  since  normal  quoting
+       characters  lose their meanings between brackets.  If the pattern is stored in a shell variable, quoting
+       the variable expansion forces the entire pattern to be matched  as  a  string.   Substrings  matched  by
+       parenthesized subexpressions within the regular expression are saved in the array variable BASH_REMATCH.
+       The element of BASH_REMATCH with index 0 is the portion  of  the  string  matching  the  entire  regular
+       expression.   The  element  of  BASH_REMATCH  with index n is the portion of the string matching the nth
+       parenthesized subexpression.
+
+       Expressions may be combined using the following operators, listed in decreasing order of precedence:
+
+              ( expression )
+                     Returns the value of expression.  This may be used to override the  normal  precedence  of
+                     operators.
+              ! expression
+                     True if expression is false.
+              expression1 && expression2
+                     True if both expression1 and expression2 are true.
+              expression1 || expression2
+                     True if either expression1 or expression2 is true.
+
+              The  && and || operators do not evaluate expression2 if the value of expression1 is sufficient to
+              determine the return value of the entire conditional expression.
+```
+当使用`==`和`!=`时，操作符右边的字符串被视为一个pattern，按照下面的`PatternMatching`章节中的规则来匹配，和`extglob`选项开启了一样。　`=`操作符和`==`等价。如果`nocasematch`选项开启了的话，匹配时会忽略字母的大小写。如果字符串匹配(`==`)pattern或者不匹配(`!=`)，返回值是0，否则是1。pattern中的任何一部分都可以被引号包围，强制按字符串匹配。  
+另一个二元操作符`=~`，优先级和`==`和`!=`相同。当使用它时，右边的字符串被视为扩展正则表达式，并且按照规则匹配。如果字符串符合规则，返回值是0，否则是1。如果正则表达式的语法错误，那么条件表达式的返回值是2。如果`nocasematch`选项开启了，匹配时不考虑字母的大小写。pattern中的任意部分都可以被引号括起来，强行作为字符串匹配。要小心对待正则表达式中的括号表达式，因为常规的引号在括号中失去意义。如果pattern保存在一个shell变量中，用引号包围变量展开会强制将整个pattern作为字符串匹配。正则表达式中被括号子表达式匹配的子串被保存在数组变量`BASH_REMATCH`中。  
+    `BASH_REMATCH`的`0`号元素是字符串匹配整个正则表达式的部分。`BASH_REMATCH`中下标为`n`的元素是字符串中匹配第`n`个括号内的子表达式的部分。  
+    表达式可以用下面的操作符结合起来，按优先级递减排列：  
+    `(expression)`返回`expression`的值。这可以用来覆盖操作符的优先级。  
+    `! expression` 如果`expression`是错误的，为真。  
+    `expression1 && expression2` 1,2都为真时为真。  
+    `expression1 || expression2` 1,2至少有一个为真。  
+    如果第一个表达式就可确定返回值，`&&` 和`||`操作符不会计算第二个表达式的值。
+```
+       for name [ [ in [ word ... ] ] ; ] do list ; done
+              The list of words following in is expanded, generating a list of items.  The variable name is set
+              to each element of this list in turn, and list is executed each time.  If the in word is omitted,
+              the for command executes list once for each positional parameter  that  is  set  (see  PARAMETERS
+              below).   The  return status is the exit status of the last command that executes.  If the expan‐
+              sion of the items following in results in an empty list, no commands are executed, and the return
+              status is 0.
+
+       for (( expr1 ; expr2 ; expr3 )) ; do list ; done
+              First,  the arithmetic expression expr1 is evaluated according to the rules described below under
+              ARITHMETIC EVALUATION.  The arithmetic expression expr2 is then  evaluated  repeatedly  until  it
+              evaluates  to  zero.   Each  time  expr2  evaluates to a non-zero value, list is executed and the
+              arithmetic expression expr3 is evaluated.  If any expression is omitted,  it  behaves  as  if  it
+              evaluates  to  1.   The  return value is the exit status of the last command in list that is exe‐
+              cuted, or false if any of the expressions is invalid.
+
+       select name [ in word ] ; do list ; done
+              The list of words following in is expanded, generating a list of  items.   The  set  of  expanded
+              words  is  printed  on the standard error, each preceded by a number.  If the in word is omitted,
+              the positional parameters are printed (see PARAMETERS below).  The PS3 prompt is  then  displayed
+              and  a  line read from the standard input.  If the line consists of a number corresponding to one
+              of the displayed words, then the value of name is set to that word.  If the line  is  empty,  the
+              words  and  prompt  are displayed again.  If EOF is read, the command completes.  Any other value
+              read causes name to be set to null.  The line read is saved in the variable REPLY.  The  list  is
+              executed  after  each  selection until a break command is executed.  The exit status of select is
+              the exit status of the last command executed in list, or zero if no commands were executed.
+
+       case word in [ [(] pattern [ | pattern ] ... ) list ;; ] ... esac
+              A case command first expands word, and tries to match it against each pattern in turn, using  the
+              same  matching  rules  as  for  pathname  expansion  (see Pathname Expansion below).  The word is
+              expanded using tilde expansion, parameter and variable expansion, arithmetic  expansion,  command
+              substitution,  process  substitution  and quote removal.  Each pattern examined is expanded using
+              tilde expansion, parameter and variable expansion, arithmetic  expansion,  command  substitution,
+              and  process  substitution.   If  the nocasematch shell option is enabled, the match is performed
+              without regard to the case of alphabetic characters.  When a match is  found,  the  corresponding
+              list  is  executed.   If  the  ;; operator is used, no subsequent matches are attempted after the
+              first pattern match.  Using ;& in place of ;; causes execution to continue with the list  associ‐
+              ated  with  the next set of patterns.  Using ;;& in place of ;; causes the shell to test the next
+              pattern list in the statement, if any, and execute any associated list  on  a  successful  match.
+              The exit status is zero if no pattern matches.  Otherwise, it is the exit status of the last com‐
+              mand executed in list.
+
+       if list; then list; [ elif list; then list; ] ... [ else list; ] fi
+              The if list is executed.  If its exit status is zero, the then list is executed.  Otherwise, each
+              elif  list  is  executed  in turn, and if its exit status is zero, the corresponding then list is
+              executed and the command completes.  Otherwise, the else list is executed, if present.  The  exit
+              status is the exit status of the last command executed, or zero if no condition tested true.
+
+       while list-1; do list-2; done
+       until list-1; do list-2; done
+              The  while  command continuously executes the list list-2 as long as the last command in the list
+              list-1 returns an exit status of zero.  The until command is  identical  to  the  while  command,
+              except that the test is negated: list-2 is executed as long as the last command in list-1 returns
+              a non-zero exit status.  The exit status of the while and until commands is the  exit  status  of
+              the last command executed in list-2, or zero if none was executed.
+```
+- `for name [ [ in [ word ... ] ] ; ] do list ; done`  
+`in`后面的列表被展开，生成一系列的单位。`name`被轮流设置成里面的元素，并且每次都会执行`list`。如果`in`被省略了，`for`循环对每个位置参数执行一次`list`。返回值是最后执行的命令的返回值。如果`in`后面的列表展开之后为空，那么不执行任何命令，返回0。  
+- `for (( expr1 ; expr2 ; expr3 )) ; do list ; done`  
+首先，`expr1`按规则执行，然后`expr2`重复执行直到值为0。每次执行`expr2`得到一个非零值，都会执行`list`和`expr3`。如果哪个表达式被省略了，视作它的值为1。返回值是`list`中最后一个执行的命令的返回值。如果有不合法的表达式，返回`false`。  
+- `select name [ in word ] ; do list ; done`  
+`in`后面的列表被展开，生成一系列单位。展开的一系列`word`被输出到标准错误中，每项前面都有一个数字。如果`in`被省略了，就把位置参数打印出来。然后显示`PS3`提示符，并且从标准输入读入一行。如果输入行中含有一个和显式的`word`对应的数字，那么`name`的值就被设置为那个`word`的值。如果输入行为空，就再来一次。如果读到了`EOF`，命令执行完毕。其他的读入值都会导致`name`被设为`null`。读入的行保存在`REPLY`变量中。直到遇到一个中断命令， 每选择一次就执行一次`list`。返回值是`list`中最后一个被执行的命令的返回值。如果没执行任何命令，返回0。  
+- `case word in [ [(] pattern [ | pattern ] ... ) list ;; ] ... esac`  
+`case`命令首先展开`word`，然后轮流试`pattern`，使用路径展开的匹配规则。`word`用`tilde/parameter&variable/arithmetic expansion, command substitution, process substitution`的规则展开。如果选了`nocasematch`，匹配无视大小写。如果找到了一个匹配，执行相应的`list`。如果有`;;`符号，找到了一个之后就不找了。用`;&`代替`;;`，找到一个之后会继续在下一个`pattern`对应的`list`里面找。`;;&`会导致shell测试下一个表达式里的`pattern list`如果有的话，那就在每次成功匹配的时候执行对应的`list`。如果没有匹配，返回值是0。如果有匹配，返回值是最后执行的命令的返回值。  
+- `if list; then list; [ elif list; then list; ] ... [ else list; ] fi`
+`if list`先执行，如果返回值是0，那么执行`list`。否则轮流执行`elif list`，如果返回值是0，对应的`then list`被执行，并且命令结束。否则，执行`else list`，如果存在的话。返回值是最后执行的命令的返回值，如果没有一个条件为真，就返回0。  
+- `while list-1; do list-2; done  
+  until list-1; do list-2; done`
+  只要`list-1`中的最后一个命令返回值为0，`while`就会不停执行`list-2`。`util`和`while`一样，不同之处就是在`list-1`返回值不为零的时候不停执行`list-2`。这两个命令的返回值是`list-2`中最后执行的命令的返回值，如果没有执行，返回0。
