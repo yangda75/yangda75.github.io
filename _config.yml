@@ -28,7 +28,7 @@ disqus:
 markdown: kramdown
 kramdown:
         math_engine: mathjax
-theme: jekyll-theme-leap-day
+theme: jekyll-theme-midnight
 plugins:
   - jekyll-feed
 exclude:
