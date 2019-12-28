@@ -1,0 +1,272 @@
+#+STARTUP: showall indent
+#+STARTUP: hidestars
+#+OPTIONS: toc:nill
+---
+published: true
+layout: post
+title: Event Loop in Node.js
+tags: Node.js
+---
+#+TITLE:Event Loop in Node.js
+
+https://nodejs.org/de/docs/guides/event-loop-timers-and-nexttick/
+
+* 什么是Event Loop  
+  单线程的JavaScript中，Node.js通过event loop执行非阻塞IO。具体的实现方式：只要可能，就把操作交给系统内核。
+  目前大多数系统内核都是多线程的，可以处理多个后台任务。当一个后台任务完成时，系统内核通知Node.js执行相
+  关的回调函数，Node.js将相应的函数加入到 =poll= 队列中，然后执行。后面会详细解释。
+
+* 简介Event Loop
+  当Node.js启动时，它初始化事件循环，执行给定的脚本，或者进入REPL（本文不讨论REPL）。脚本可能调用异步的
+  API，或者设定定时器，或者调用 =process.nextTick()= ，此时Node.js就开始处理事件队列。
+  下面是简化的EventLoop流程图：
+
+  #+BEGIN_EXAMPLE
+     ┌───────────────────────────┐
+  ┌─>│           timers          │
+  │  └─────────────┬─────────────┘
+  │  ┌─────────────┴─────────────┐
+  │  │     pending callbacks     │
+  │  └─────────────┬─────────────┘
+  │  ┌─────────────┴─────────────┐
+  │  │       idle, prepare       │
+  │  └─────────────┬─────────────┘      ┌───────────────┐
+  │  ┌─────────────┴─────────────┐      │   incoming:   │
+  │  │           poll            │<─────┤  connections, │
+  │  └─────────────┬─────────────┘      │   data, etc.  │
+  │  ┌─────────────┴─────────────┐      └───────────────┘
+  │  │           check           │
+  │  └─────────────┬─────────────┘
+  │  ┌─────────────┴─────────────┐
+  └──┤      close callbacks      │
+     └───────────────────────────┘
+  #+END_EXAMPLE
+  上图中一个方块对应一个阶段。
+  每个方块都有一个先进先出的回调函数队列需要执行。每个阶段都是独特的，但是执行的机制是相同的。
+  一个阶段开始执行之后，会执行阶段的队列中的回调函数，直到穷尽队列或者达到最大回调函数执行数量，之后，
+  开始执行下一个阶段。
+  考虑到 =poll= 队列中的操作有可能安排更多的操作和新的事件，所以poll事件可以在另一个poll事件被处理的时候
+  加入poll队列。因此，运行时间长的回调函数会导致poll阶段的运行时长超过定时器限制。
+
+* 阶段简介
+  - timers: 这个阶段执行 =setTimeout()= 和 =setInterval()= 安排的回调函数
+  - pending callbacks: 执行被推迟到下一循环的IO回调函数
+  - idle, prepare: 只在内部使用
+  - poll: 获取I/O事件；执行I/O相关的回调函数（除了close回调，定时器和 =setImmediate()= 安排的回调之外的所有
+  回调）；node 会在?合适?的时候在此处阻塞
+  - check: 执行 =setImmediate()= 的回调
+  - close callbacks: 一些关闭回调，例如 =socket.on('close', ...)= 
+    
+   在阶段之间，Node.js会检查有没有需要完整关闭的异步I/O或者定时器
+
+* 详解阶段
+** timers
+   一个定时器指定时长限制 *threshold* ，在过了这段时间之后，执行一个指定的回调函数。时长限制并不是精确的
+。回调函数会在过了指定时间之后尽早执行。然而，操作系统调度或者其他的回调函数会推迟它的执行。
+  
+   *Note:* 实际上， /poll/ 阶段控制定时器何时执行
+
+   例如，设定一个100ms之后执行的定时任务A，然后程序开始异步地去读取一个文件，读取文件用时95ms，当事件循环
+进入 =poll= 阶段时，它的队列是空的，所以它会等待，直到达到最近的时长限制。当等待了95ms时，文件读取结束了
+，然后将自己的回调函数B加入队列中并立即执行，这个回调函数B需要执行10ms。B执行完成后，poll队列中没有回调
+函数了，所以事件循环会找最早到达的时长限制所属的定时器，然后回到timer阶段去执行它的回调。此例中，计时器
+开始到它的回调执行一共105ms。
+
+为了防止poll阶段starve事件队列，libuv还有一个硬性限制，超过最大值之后就会停止poll阶段。
+
+** pending command
+   在这个阶段中，会执行系统操作的回调函数，比如TCP错误。例如，一个TCP套接字在连接时收到了 =ECONNREFUSED=
+   ，一些*nix系统会等待并报告错误。这会被加入到 pending callbacks 阶段的队列中执行。
+** poll
+   poll 阶段有两个主要的函数：
+   1. 计算阻塞和poll I/O需要多长时间
+   2. 处理poll队列中的事件
+   当事件队列进入poll阶段并且没有定时器任务时，下列两件事中的一件会发生：
+   - 如果poll队列不为空，则事件循环会同步地按顺序执行队列中的回调函数直到穷尽队列或者达到了系统相关
+     的硬限制
+   - 如果poll队列为空，以下两件事之一会发生：
+     - 如果有 =setImmediate()= 安排的回调函数，事件循环会停止poll阶段，进入check阶段来执行那些回调
+     - 如果没有，事件队列会等待回调函数加入队列，然后立即执行它们
+   
+   当poll队列为空时，事件循环会检查有那些定时器的时间还没到。如果一个或多个定时器已经可以执行，事件
+   循环会回到timers阶段执行那些定时器的回调函数。
+** check
+   这个阶段使我们可以在poll阶段结束之后可以立即执行一些回调函数。如果poll阶段处于空闲状态，事件循环
+   也有可能不等待，直接进入check阶段。
+   =setImmediate= 实际上是一个特殊的定时器，它在一个独立的阶段中执行。它使用libuv的API来安排回调函数
+   ，在poll阶段结束之后执行。
+   通常，在代码执行的过程中，事件循环总会进入poll阶段，在那里等待连接的建立，接受请求，等等。然而，
+   如果用 =setImmediate()= 安排了一个回调，并且poll阶段处于空闲，事件循环会停止poll阶段然后进入check
+   阶段而不是等待函数被加入poll阶段中的队列。
+** close callbacks
+   如果一个套接字或句柄突然结束（比如 =socket.destroy()= ），就会发出 ='close'= 事件并被这个阶段捕获。
+   否则它会通过 =process.nextTick()= 来发出事件。
+
+* =setImmediate()= vs =setTimeout()=
+  两者相似，但是根据调用时机的不同有不同的表现。
+  - =setImmediate()= 用来在poll阶段结束之后执行代码
+  - =setTimeout()= 用来在一段时间后执行代码
+  定时器执行的顺序根据调用上下文的不同而变化。如果都是在主模块中，那么会由进程的表现决定。
+
+  #+BEGIN_SRC javascript
+    setTimeout(()=>{
+        console.log('timeout')
+    },0)
+
+    setImmediate(()=>{
+        console.log('immediate')
+    })
+  #+END_SRC
+  上面的脚本执行顺序不定。但是，如果将两个调用放在一个I/O循环中，那么immediate的回调总是先执行。
+
+  #+BEGIN_SRC javascript
+    const fs = require('fs')
+
+    fs.readFile(__filename, () => {
+        setTimeout(()=>{
+            console.log('timeout')
+        },0)
+        setImmediate(()=>{
+            console.log('immediate')
+        })
+    })
+  #+END_SRC
+  相比 =setTimeout()= , =setImmediate()= 的主要优点就是它总会在同一个I/O循环中所有的定时器之前执行，
+  不论有多少个定时器。
+
+* =process.nextTick()=
+** 理解 =process.nextTick()= 
+=process.nextTick()= 并没有显示在之前的图中，虽然它也是异步API的一部分。这是因为
+=process.nextTick()= 严格来说并不是事件循环的一部分。事实上， =nextTickQueue= 会在当前的
+操作完成之后执行，不管当前的操作处于事件循环的哪个阶段都是这样。此处，一个“操作”指底层的
+c++处理JavaScript代码的一个过程。
+回头看之前的图，无论在哪个阶段调用 =process.nextTick()= ，传给它的所有回调都会在事件循环
+继续之前执行。这会导致一些问题，因为递归调用 =process.nextTick()= 可以"starve"I/O，阻止
+事件循环进入poll阶段。
+** 为什么允许它存在？
+为什么Node.js要包含这样的东西？一部分原因是Node.js的设计思想：即使没有必要，所有的API应该总是异步的。例如：
+#+BEGIN_SRC javascript
+  function apiCall(arg, callback){
+      if(typeof arg !== 'string')
+	  return process.nextTick(callback,
+				  new TypeError('argument should be string'));
+  }
+#+END_SRC 
+上面的代码会检测参数，在参数不正确的时候传入回调函数中。最近更新的Node.js API允许直接向 =process.nextTick()= 
+传参数，这使得 =apiCall= 的参数列表中callback之后的所有参数都作为回调函数的参数直接传入，所以不需要使用
+嵌套的函数了。
+我们做的事情是在剩下的所有代码执行完成之后向用户返回了一个错误。使用 =process.nextTick()=  保证了 
+=apiCall= 总会在执行完其他的代码之后，在时间循环进行下一阶段之前这个时段执行它的回调函数。为了做到这一点，
+JS的调用栈被设计成可以在撤销(unwind)一个操作之后立即执行给定的回调，这也使得递归调用 =process.nextTick()=
+不会遇到调用层数限制。
+这个设计理念会导致一些问题。例如：
+
+#+BEGIN_SRC javascript
+  let bar;
+
+  function someAsyncApiCall(callback){callback();}
+
+  someAsyncApiCall(()=>{
+      console.log('bar',bar);
+  });
+
+  bar = 1;
+#+END_SRC
+
+用户定义了 =someAsyncApiCall= ，似乎有一个的异步的签名，但是实际上它是同步执行的。被调用时，传给
+=someasyncapicall= 的回调函数在时间循环的同一个阶段执行了，因为实际上 =someAsyncapicall= 没有做异步操作。
+因此，回调函数尝试引用变量 =bar= ，即使它也许并不在scope中。
+使用 =process.nextTick()= ，脚本仍然可以执行完，允许回调函数之前的变量定义和函数完成。与此同时，事件循环
+暂停了。这也许是有用的，也许可以在事件循环继续之前给用户一个警告。
+
+#+BEGIN_SRC javascript
+  let bar;
+
+  function someAsyncApiCall(callback){
+      process.nextTick(callback);
+  }
+
+  someAsyncApiCall(() => {
+      console.log('bar',bar);
+  });
+
+  bar = 1
+#+END_SRC 
+
+另一个例子：
+
+#+BEGIN_SRC javascript
+  const server = net.createServer(() => {}).listen(8080);
+
+  server.on('listening', () => {});
+#+END_SRC
+
+当只传入端口时，端口立即被绑定。所以， ='listening'= 这个回调可能立即被调用。问题是此时
+ =.on('listening')= 这个回调还没有被设置。
+为了解决这个问题， ='listening'= 事件被放在一个 =nextTick()= 中，使得脚本执行完成。这使得用户可以注册
+任意的事件处理器。
+
+** =process.nextTick()= vs =setImmediate()=
+两者是相似的，但是名字使人疑惑。
+- =process.nextTick()= 在事件循环的同一个阶段立即执行
+- =setImmediate()= 在事件循环的下一轮，或者下一个'tick'，执行
+简单来说，这两个东西的名字该换一下。 =process.nextTick()= 比 =setImmediate= 更immediate，但是这个是历史
+包袱，不太可能改。换名字会导致npm上的包大面积瘫痪。每天都有很多包被上传上去。
+
+推荐使用 =setImmediate()= ，所有情况下都推荐，因为更容易 ‘reason about’ 
+[[https://stackoverflow.com/questions/18666821/what-does-the-term-reason-about-mean-in-computer-science][reason about]]
+
+** 为什么要用 =process.nextTick()= ?
+有两个主要原因：
+1. 允许用户在事件循环继续之前处理错误、清理不再需要的资源、再次尝试请求等等；
+2. 必须要在调用栈执行完但是事件循环还没继续的时候执行回调的情况
+例子：
+#+BEGIN_SRC javascript
+  const server = net.createServer();
+  server.on('connection', (conn) => {});
+
+  server.listen(8080);
+  server.on('listening', () => {});
+#+END_SRC
+假设 =listen()= 在事件循环开始时执行，但是监听的回调放在一个 =setImmediate()= 中。除非传了一个hostname,
+否则端口会立刻绑定。事件循环想要继续，必须要执行poll阶段，这就意味着有可能在监听回调没注册之前就有一个连接
+进来。
+另一个例子是在构造函数中调用事件，这个构造函数继承了 =EventEmitter= 。
+
+#+BEGIN_SRC javascript
+  const EventEmitter = require('events');
+  const util = require('util');
+
+  function MyEmitter(){
+      EventEmitter.call(this);
+      this.emit(event);
+  }
+
+  util.inherits(MyEmitter, EventEmitter);
+
+  const myEmitter = new MyEmitter();
+  myEmitter.on('event', () => {
+      console.log('an event occurred!');
+  });
+#+END_SRC
+实际上并不能在构造函数中发出事件，因为脚本还没执行到给事件指定回调函数那一步。所以，在构造函数中，可以使用
+=process.nextTick()= 来发出事件，这样，在事件发出之前，回调就注册好了。
+#+BEGIN_SRC javascript
+  const EventEmitter = require('events');
+  const util = require('util');
+
+  function MyEmitter() {
+    EventEmitter.call(this);
+
+    // use nextTick to emit the event once a handler is assigned
+    process.nextTick(() => {
+      this.emit('event');
+    });
+  }
+  util.inherits(MyEmitter, EventEmitter);
+
+  const myEmitter = new MyEmitter();
+  myEmitter.on('event', () => {
+    console.log('an event occurred!');
+  });
+#+END_SRC 
