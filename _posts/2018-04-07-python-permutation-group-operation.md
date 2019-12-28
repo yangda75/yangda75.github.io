@@ -22,7 +22,8 @@ tags: python, basic group theory, recursion
 从上面的例子中可以得出：“寻找一个元素的像”这个过程进行了很多次，是运算中的基础部件，我们先来考虑这个过程。寻找一个元素的像，把这个过程用find_next函数表示。find_next函数接收两个输入，一个是要计算的算式，另一个是要找到像的元素。回忆上面的例子，find_next要做的其实就是我们得到３之后做的事情，(find_next((12)(34),3))。首先是找到式子中３第一次出现的位置，从右往左找，第一次出现之前每一个括号对３来说都是恒等映射，不用管。找到之后就进行find_next((12),4)，因为3被映射到４了，剩下的式子就是(12)。到这里就发现了find_next可以写
 成递归形式的，其实也可以写成while循环，不过这里递归容易想到。
 最终的代码：
-{% highlight python linenos=table %}
+{% highlight python %}
+{% raw %}
 def find_next(expression, a):
     l = len(expression) - 1
     while l >= 0:
@@ -44,6 +45,7 @@ def find_next(expression, a):
                 expression[0].index(a) + 1) % len(expression[0])]
         else:
             return a
+{% endraw %}
 {% endhighlight %}
 
 
@@ -55,8 +57,8 @@ def find_next(expression, a):
 	3. B中一个元素g，结合轮换的知识，这种情况表示轮换结束了，随便找一个A中元素执行find_next    
 在这一步中我觉得while循环比较自然，所以就写成了while循环。
 最终的代码：
-{% highlight python linenos=table %}
-
+{% highlight python %}
+{% raw %}
 def calc(expression):
     ans = []
     partial_ans = []
@@ -76,6 +78,7 @@ def calc(expression):
                 ans.append(partial_ans)
             partial_ans = []
     return ans
+{% endraw %}
 {% endhighlight %}
 
 #### 代码

@@ -15,8 +15,7 @@
 # in the templates via {{ site.myvariable }}.
 title: bill's blog
 email: billyang363@gmail.com
-description: #> # this means to ignore newlines until "baseurl:"
-	billyang363@gmail.com
+description: billyang363@gmail.com
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: billyang363
@@ -35,4 +34,4 @@ plugins:
 exclude:
   - Gemfile
   - Gemfile.lock
-highlighter: rouge
+#highlighter: rouge
