@@ -54,7 +54,7 @@ class AioTcpClient{
 3. `readResponse`，读取回复
 
 在写`nextFlowNo`的访问器的时候用的原生锁，kotlin中的`@Synchronized`标记类的作用就是将生成的java方法用`synchronized`关键字修饰。在写`request`的方法的时候我没法用原生锁，因为
-不能在`synchronized`关键字标记的代码块中进行线程休眠，这和`suspend`冲突。用`kotlinx.couroutines.sync.Mutex`才合适，于是我就用了。
+不能在`synchronized`关键字标记的代码块中进行线程休眠，这和`suspend`冲突，用`kotlinx.couroutines.sync.Mutex`才合适。
 
 但是，运行的时候出了问题，贴一段log
 ```
