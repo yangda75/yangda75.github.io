@@ -50,7 +50,7 @@ class AioTcpClient{
 
 三个方法：
 1. `nextFlowNo`的`get()`（访问器）方法，用于获取新的`flowNo`。
-2. `request`，发送请求并读取回复，用`lock`这把锁将
+2. `request`，发送请求并读取回复，用`lock`这把锁将通信部分锁起来
 3. `readResponse`，读取回复
 
 在写`nextFlowNo`的访问器的时候用的原生锁，kotlin中的`@Synchronized`标记类的作用就是将生成的java方法用`synchronized`关键字修饰。在写`request`的方法的时候我没法用原生锁，因为
