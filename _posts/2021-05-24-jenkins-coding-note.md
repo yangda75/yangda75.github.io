@@ -25,7 +25,7 @@ script {
 }
 ```
 在构建快照里可以找到 `PROJECT_TOKEN_GK` 和 `PROJEC_TOKEN` ，用这个组合就可以访问项目中的所有代码仓库，很方便。
-![img](../img/post20210524-tokens.png)
+![img](/img/post20210524-tokens.png)
 一开始我没找到这个办法，直接生成了一个访问令牌放在CI流程的启动参数里，也能编译，但不安全。
 
 ### GitSCM
