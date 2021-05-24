@@ -1,11 +1,8 @@
 ---
 layout: post
-title: "Coding.net上的Jenkins简单使用总结"
+title: "Coding.net上的JenkinsCI简单使用"
 tags: jenkins, ci, coding.net
 ---
-
-# coding.net上的jenkins CI 简单使用
-
 
 ## Jenkins
 公司把所有的项目代码仓库都挪到了coding.net上。公司买的套餐有Jenkins功能，放着就浪费了，正好原来的本地GitLab服务器有点问题，就试着用一下coding的CI，编一个前后端分离的项目。
@@ -25,7 +22,6 @@ script {
 }
 ```
 在构建快照里可以找到 `PROJECT_TOKEN_GK` 和 `PROJEC_TOKEN` ，用这个组合就可以访问项目中的所有代码仓库，很方便。
-![img](/img/post20210524-tokens.png)
 一开始我没找到这个办法，直接生成了一个访问令牌放在CI流程的启动参数里，也能编译，但不安全。
 
 ### GitSCM
