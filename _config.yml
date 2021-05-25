@@ -22,13 +22,14 @@ twitter_username: billyang363
 github_username:  bill363yang
 host: 0.0.0.0
 # comment:
-disqus:
-    shortname: bill363yang-github-com
+site:
+    disqus:
+        shortname: bill363yang-github-com
 # Build settings
 markdown: kramdown
 kramdown:
         math_engine: mathjax
-theme: jekyll-theme-hacker
+theme: minima
 plugins:
   - jekyll-feed
 exclude:
