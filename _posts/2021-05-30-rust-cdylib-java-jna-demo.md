@@ -91,7 +91,7 @@ java package file tree:
                 `-- libcdylib.so
 
 ```
-有两个细节，`Native.loadLibrary`方法会从系统对应的文件夹里面找库文件，我用的是linux，所以它在`linux-x86-64`文件里找；另外一个细节是`Native.loadLibrary`方法输出的参数并不是库文件的全名，因为不同系统中名字不一样，对于linux系统，需要去掉`lib`前缀和`.so`后缀。
+有两个细节，`Native.loadLibrary`方法会从系统对应的文件夹里面找库文件，我用的是linux，所以它在`linux-x86-64`文件夹里找；另外一个细节是`Native.loadLibrary`方法输入的参数并不是库文件的全名，因为不同系统中名字不一样，对于linux系统，需要去掉`lib`前缀和`.so`后缀。
 
 ## rust部分
 `lib.rs`
