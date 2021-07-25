@@ -77,5 +77,5 @@ compileKotlin.kotlinOptions {
 
 # callable reference
 
-开头的代码中用了 `SS::sortedBy`，这是一个 [callable reference](https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.13.2)，并不是一个代码块，它也支持 coercion to unit。
+开头的代码中用了 `SS::sortedBy`，这是一个 [callable reference](https://kotlinlang.org/docs/reflection.html#callable-references)，并不是一个代码块，它也支持 coercion to unit。
 因为java 8也支持这个特性。相关链接 : [YouTrack](https://youtrack.jetbrains.com/issue/KT-11723) , [jls 15.13.2](https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.13.2), [StackOverflow answer](https://stackoverflow.com/questions/32539100/why-does-this-java-8-method-reference-compile/32539211#32539211)
