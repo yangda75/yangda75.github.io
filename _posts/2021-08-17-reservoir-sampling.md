@@ -14,10 +14,10 @@ tags: reservoir sampling, simple random sample, randomized algorithm
 ## 时间复杂度O(n), 空间复杂度O(k)
 只能遍历一次流，或者说，只能按输入次序处理，并且不能保存之前的所有输入。
 
-## 函数签名
+## 函数签vv
 用了`vector`表示流，这样代码简单一些。
 ```c++
-std::vector<int> randomSample(std::vector<int> &it, const int k)
+std::vector<int> randomSample(std::vector<int> &v, const int k)
 ```
 ## 算法：
 - 前`k`个元素直接放在样本里。
