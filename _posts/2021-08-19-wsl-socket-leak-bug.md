@@ -109,19 +109,29 @@ WSL(伏笔2)顶上（Vmware明显是更好的选择，但是客户给我们的�
     9:57  > 目前客户的反馈是，端口虽然被释放了，但处于bound状态，实际这个端口仍然是不可用的
     9:57  > 可能还需要优化下端口释放
     
-这个文件大小对劲！我处理了Bound.txt，发现里面有三万多行的bound状态的socket记录，
-都属于一个PID，9724。之后找到了一个stackoverflow的帖子，
+这个文件大小对劲！
+
+我处理了Bound.txt，发现里面有三万多行的bound状态的socket记录，
+都属于一个PID，9724。
+
+之后找到了一个stackoverflow的帖子，
 [superuser](https://superuser.com/questions/1348102/windows-10-ephemeral-port-exhaustion-but-netstat-says-otherwise)
-和我们遇到的问题相同：端口耗尽但是netstat输出很少，有一个程序跑在wsl里。帖子指向
-一个 [GitHub
+和我们遇到的问题相同：
+- 端口耗尽但是netstat输出很少，
+- 有一个程序跑在wsl里。
+
+帖子指向一个 [GitHub
 Issue](https://github.com/Microsoft/WSL/issues/2913#issuecomment-455262160)，里
-面有复现方法，和修复说明：升级windows到build 18890。去现场实施的项目工程师同事复
-现了(参见伏笔1,2)，公司的测试机和我们的开发机都没复现，因为我们的windows都比较新，
-小杨作为全组唯一一个用wsl而不是Vmware或者linux真机开发的人，用的是wsl2(伏笔2)。
+面有复现方法，和修复说明：
+- 升级windows到build 18890。
+
+去现场实施的项目工程师同事复现了(参见伏笔1,2)，公司的测试机和我们的开发机都没复
+现，因为我们的windows都比较新，小杨作为全组唯一一个用wsl而不是Vmware或者linux真
+机开发的人，用的是wsl2(伏笔2)。
 
 ## 破案之后
-bug找出来了，但是还没修复，因为 跨国公司の流程 。系统不可以随便升级。
-这又是一个windows系统的bug，不升级解决不了。不过只是时间问题了。
+bug找出来了，但是还没修复，因为 跨国公司の流程。系统不可以随便升级。
+而这是一个windows系统的bug，不升级解决不了。不过只是时间问题了。
 
     BUG(8月?日 - 8月18日),8月7日第一次被报告，8月18日查明来历
 
