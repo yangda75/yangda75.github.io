@@ -58,3 +58,6 @@ std::vector<int> randomSample(const std::vector<int> &v, const int k) {
     return sample;
 }
 ```
+
+## TODO扩展
+https://en.wikipedia.org/wiki/Reservoir_sampling
