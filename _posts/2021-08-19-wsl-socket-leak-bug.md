@@ -31,6 +31,7 @@ tags: debug, wsl1, socket leak
 
     java.net.SocketException: No buffer space available (maximum connections
     reached?) 
+
 google上可以搜到182,000,000条结果。最早的一条是2003年的(tomcat)[https://developer.jboss.org/thread/55838]
 很开心，直接截图发到了群里。由于这一条报错是在程序刚启动，初始化数据库连接池的时候
 报的，就顺便加了一句话，
@@ -58,7 +59,6 @@ WSL(伏笔2)顶上（Vmware明显是更好的选择，但是客户给我们的�
 
 我迷失了。
 
-我的能力是弱，但是“你跺你也麻”！
 
 ## `netstat`
 
