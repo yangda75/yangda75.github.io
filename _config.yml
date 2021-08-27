@@ -15,24 +15,30 @@
 # in the templates via {{ site.myvariable }}.
 title: 阿达的博客
 email: foshan-yewen@qq.com
-description: foshan-yewen@qq.com 欢迎来信
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: "http://blog.yangda.xyz" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: billyang363
 github_username:  bill363yang
 host: 0.0.0.0
 # comment:
-site:
-    disqus:
-        shortname: bill363yang-github-com
+disqus:
+  shortname: bill363yang-github-com
 # Build settings
 markdown: kramdown
 kramdown:
-        math_engine: mathjax
+  input: GFM
+  math_engine: mathjax
+  syntax_highlighter: rouge
 theme: minima
 plugins:
   - jekyll-feed
 exclude:
   - Gemfile
   - Gemfile.lock
+minima:
+  skin: classic
+author:
+  name: yangda
+  email: yangda@seer-group.com
+google_analytics: UA-NNNNNNNN-N
 #highlighter: rouge
