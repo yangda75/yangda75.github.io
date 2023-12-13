@@ -16,9 +16,9 @@
 title: 阿达的博客
 email: foshan-yewen@qq.com
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "http://blog.yangda.xyz" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username: billyang363
-github_username:  bill363yang
+url: "http://yangda75.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+twitter_username: yangda236246
+github_username:  yangda75
 host: 0.0.0.0
 # comment:
 disqus:
@@ -39,6 +39,6 @@ minima:
   skin: classic
 author:
   name: yangda
-  email: yangda@seer-group.com
+  email: billyang363@gmail.com
 google_analytics: UA-NNNNNNNN-N
 #highlighter: rouge
