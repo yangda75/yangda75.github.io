@@ -14,9 +14,9 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 title: 阿达的博客
-email: foshan-yewen@qq.com
+email: billyang363@gmail.com
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "http://yangda75.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://yangda75.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: yangda236246
 github_username:  yangda75
 host: 0.0.0.0
