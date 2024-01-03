@@ -15,8 +15,7 @@
 # in the templates via {{ site.myvariable }}.
 title: 阿达的博客
 email: billyang363@gmail.com
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "https://yangda75.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+
 twitter_username: yangda236246
 github_username:  yangda75
 host: 0.0.0.0
